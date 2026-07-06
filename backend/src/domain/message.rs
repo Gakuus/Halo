@@ -15,9 +15,13 @@ pub struct Message {
     id: MessageId,
     conversation_id: ConversationId,
     sender_id: UserId,
+    #[expect(dead_code)]
     ciphertext: Ciphertext,
+    #[expect(dead_code)]
     iv: Iv,
+    #[expect(dead_code)]
     salt: Salt,
+    #[expect(dead_code)]
     signature: Signature,
     status: MessageStatus,
     timestamp: Timestamp,

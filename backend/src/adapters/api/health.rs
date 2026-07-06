@@ -1,4 +1,4 @@
-use axum::{http::StatusCode, Json};
+use axum::{Json, http::StatusCode};
 
 use serde::Serialize;
 
@@ -22,7 +22,7 @@ pub async fn health_check() -> (StatusCode, Json<HealthResponse>) {
 
 #[cfg(test)]
 mod tests {
-    use axum::{body::Body, http::Request, routing::get, Router};
+    use axum::{Router, body::Body, http::Request, routing::get};
     use tower::ServiceExt;
 
     use super::*;

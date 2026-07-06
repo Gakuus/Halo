@@ -2,8 +2,8 @@ use axum::Router;
 use tower_http::cors::CorsLayer;
 use tracing::info;
 
-use halo_server::config::Config;
 use halo_server::adapters::api::health;
+use halo_server::config::Config;
 
 #[tokio::main]
 async fn main() {
@@ -20,9 +20,7 @@ async fn main() {
         .await
         .expect("Failed to bind address");
 
-    axum::serve(listener, app)
-        .await
-        .expect("Server failed");
+    axum::serve(listener, app).await.expect("Server failed");
 }
 
 fn init_tracing(config: &Config) {
@@ -34,11 +32,7 @@ fn init_tracing(config: &Config) {
     match config.observability.log_format.as_str() {
         "json" => {
             tracing_subscriber::registry()
-                .with(
-                    tracing_subscriber::fmt::layer()
-                        .json()
-                        .with_target(true),
-                )
+                .with(tracing_subscriber::fmt::layer().json().with_target(true))
                 .with(
                     tracing_subscriber::EnvFilter::try_from_default_env()
                         .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new(level)),
@@ -47,11 +41,7 @@ fn init_tracing(config: &Config) {
         }
         _ => {
             tracing_subscriber::registry()
-                .with(
-                    tracing_subscriber::fmt::layer()
-                        .pretty()
-                        .with_target(true),
-                )
+                .with(tracing_subscriber::fmt::layer().pretty().with_target(true))
                 .with(
                     tracing_subscriber::EnvFilter::try_from_default_env()
                         .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new(level)),

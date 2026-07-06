@@ -16,6 +16,7 @@ const MAX_GROUP_SIZE: usize = 50;
 pub struct GroupMember {
     user_id: UserId,
     role: GroupRole,
+    #[expect(dead_code)]
     joined_at: Timestamp,
 }
 
@@ -110,9 +111,9 @@ impl Group {
     }
 
     pub fn is_admin_or_owner(&self, user_id: &UserId) -> bool {
-        self.members
-            .iter()
-            .any(|m| m.user_id == *user_id && (m.role == GroupRole::Owner || m.role == GroupRole::Admin))
+        self.members.iter().any(|m| {
+            m.user_id == *user_id && (m.role == GroupRole::Owner || m.role == GroupRole::Admin)
+        })
     }
 
     pub fn add_member(&mut self, user_id: UserId) -> Result<(), DomainError> {

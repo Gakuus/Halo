@@ -30,4 +30,3 @@ tokio-test = "0.4"
 
 [lints.rust]
 unsafe_code = "forbid"
-unused_crate_dependencies = "warn"

@@ -61,10 +61,7 @@ impl Config {
             .set_default("observability.log_level", "info")?
             .set_default("observability.log_format", "pretty")?
             .set_default("observability.enable_metrics", false)?
-            .add_source(
-                config::File::with_name(&format!("config/{}", env))
-                    .required(false),
-            )
+            .add_source(config::File::with_name(&format!("config/{}", env)).required(false))
             .add_source(
                 config::Environment::default()
                     .prefix("HALO")
