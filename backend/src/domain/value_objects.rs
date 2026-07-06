@@ -30,6 +30,12 @@ impl fmt::Display for UserId {
     }
 }
 
+impl Default for UserId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl From<Uuid> for UserId {
     fn from(uuid: Uuid) -> Self {
         Self(uuid)
@@ -130,6 +136,12 @@ impl fmt::Display for SessionId {
     }
 }
 
+impl Default for SessionId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl From<Uuid> for SessionId {
     fn from(uuid: Uuid) -> Self {
         Self(uuid)
@@ -146,6 +158,12 @@ impl JwtId {
 
     pub fn as_uuid(&self) -> &Uuid {
         &self.0
+    }
+}
+
+impl Default for JwtId {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -185,6 +203,12 @@ impl fmt::Display for MessageId {
     }
 }
 
+impl Default for MessageId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl From<Uuid> for MessageId {
     fn from(uuid: Uuid) -> Self {
         Self(uuid)
@@ -214,6 +238,12 @@ impl fmt::Display for ConversationId {
     }
 }
 
+impl Default for ConversationId {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl From<Uuid> for ConversationId {
     fn from(uuid: Uuid) -> Self {
         Self(uuid)
@@ -240,6 +270,12 @@ impl GroupId {
 impl fmt::Display for GroupId {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.0)
+    }
+}
+
+impl Default for GroupId {
+    fn default() -> Self {
+        Self::new()
     }
 }
 

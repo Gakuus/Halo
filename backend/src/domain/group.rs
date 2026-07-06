@@ -16,6 +16,7 @@ const MAX_GROUP_SIZE: usize = 50;
 pub struct GroupMember {
     user_id: UserId,
     role: GroupRole,
+    #[expect(dead_code)]
     joined_at: Timestamp,
 }
 
