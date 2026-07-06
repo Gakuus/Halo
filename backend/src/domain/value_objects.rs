@@ -53,10 +53,7 @@ impl Username {
                 "must be between 3 and 30 characters".into(),
             ));
         }
-        if !name
-            .chars()
-            .all(|c| c.is_alphanumeric() || c == '_')
-        {
+        if !name.chars().all(|c| c.is_alphanumeric() || c == '_') {
             return Err(super::error::DomainError::InvalidUsername(
                 "only alphanumeric characters and underscores allowed".into(),
             ));

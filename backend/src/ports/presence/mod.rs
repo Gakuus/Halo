@@ -14,15 +14,9 @@ pub trait PresencePort: Send + Sync {
         session_id: &crate::domain::value_objects::SessionId,
     ) -> impl Future<Output = ()> + Send;
 
-    fn user_offline(
-        &self,
-        user_id: &UserId,
-    ) -> impl Future<Output = ()> + Send;
+    fn user_offline(&self, user_id: &UserId) -> impl Future<Output = ()> + Send;
 
-    fn is_online(
-        &self,
-        user_id: &UserId,
-    ) -> impl Future<Output = bool> + Send;
+    fn is_online(&self, user_id: &UserId) -> impl Future<Output = bool> + Send;
 
     fn get_online_users(&self) -> impl Future<Output = Vec<OnlineUser>> + Send;
 }

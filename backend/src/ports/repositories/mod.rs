@@ -1,12 +1,12 @@
 use std::future::Future;
 
 use crate::domain::{
+    conversation::Conversation,
     error::DomainError,
     group::{Group, GroupMember},
     session::Session,
     user::User,
     value_objects::{ConversationId, Email, GroupId, SessionId, UserId, Username},
-    conversation::Conversation,
 };
 
 pub trait UserRepository: Send + Sync {
@@ -20,18 +20,13 @@ pub trait UserRepository: Send + Sync {
         email: &Email,
     ) -> impl Future<Output = Result<User, DomainError>> + Send;
     fn save(&self, user: &User) -> impl Future<Output = Result<(), DomainError>> + Send;
-    fn search(
-        &self,
-        query: &str,
-    ) -> impl Future<Output = Result<Vec<User>, DomainError>> + Send;
+    fn search(&self, query: &str) -> impl Future<Output = Result<Vec<User>, DomainError>> + Send;
     fn username_exists(
         &self,
         username: &Username,
     ) -> impl Future<Output = Result<bool, DomainError>> + Send;
-    fn email_exists(
-        &self,
-        email: &Email,
-    ) -> impl Future<Output = Result<bool, DomainError>> + Send;
+    fn email_exists(&self, email: &Email)
+    -> impl Future<Output = Result<bool, DomainError>> + Send;
 }
 
 pub trait SessionRepository: Send + Sync {
@@ -92,8 +87,5 @@ pub trait GroupRepository: Send + Sync {
         group_id: &GroupId,
         user_id: &UserId,
     ) -> impl Future<Output = Result<(), DomainError>> + Send;
-    fn update(
-        &self,
-        group: &Group,
-    ) -> impl Future<Output = Result<(), DomainError>> + Send;
+    fn update(&self, group: &Group) -> impl Future<Output = Result<(), DomainError>> + Send;
 }
