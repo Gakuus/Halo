@@ -1,0 +1,29 @@
+# Rust
+backend/target/
+frontend/src-tauri/target/
+**/*.rs.bk
+
+# Environment
+.env
+backend/.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+pgdata/
+
+# Logs
+*.log
+
+# Build artifacts
+frontend/dist/
+frontend/src-tauri/bin/
