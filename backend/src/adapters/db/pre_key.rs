@@ -20,14 +20,13 @@ impl PostgresPreKeyRepository {
 
 impl PreKeyRepository for PostgresPreKeyRepository {
     async fn find_bundle(&self, user_id: &UserId) -> Result<PreKeyBundle, DomainError> {
-        let identity_key: Vec<u8> = sqlx::query_scalar(
-            "SELECT identity_public_key FROM users WHERE id = $1",
-        )
-        .bind(user_id.as_uuid())
-        .fetch_optional(&self.pool)
-        .await
-        .map_err(|e| DomainError::Internal(format!("db error: {e}")))?
-        .ok_or(DomainError::UserNotFound)?;
+        let identity_key: Vec<u8> =
+            sqlx::query_scalar("SELECT identity_public_key FROM users WHERE id = $1")
+                .bind(user_id.as_uuid())
+                .fetch_optional(&self.pool)
+                .await
+                .map_err(|e| DomainError::Internal(format!("db error: {e}")))?
+                .ok_or(DomainError::UserNotFound)?;
 
         let signed_key = sqlx::query_as::<_, (i32, Vec<u8>, Vec<u8>, chrono::DateTime<chrono::Utc>)>(
             "SELECT id, public_key, signature, created_at FROM signed_pre_keys WHERE user_id = $1 ORDER BY id DESC LIMIT 1",
@@ -145,13 +144,12 @@ impl PreKeyRepository for PostgresPreKeyRepository {
     }
 
     async fn count_one_time_pre_keys(&self, user_id: &UserId) -> Result<u32, DomainError> {
-        let count: i64 = sqlx::query_scalar(
-            "SELECT COUNT(*) FROM one_time_pre_keys WHERE user_id = $1",
-        )
-        .bind(user_id.as_uuid())
-        .fetch_one(&self.pool)
-        .await
-        .map_err(|e| DomainError::Internal(format!("db error: {e}")))?;
+        let count: i64 =
+            sqlx::query_scalar("SELECT COUNT(*) FROM one_time_pre_keys WHERE user_id = $1")
+                .bind(user_id.as_uuid())
+                .fetch_one(&self.pool)
+                .await
+                .map_err(|e| DomainError::Internal(format!("db error: {e}")))?;
         Ok(count as u32)
     }
 }

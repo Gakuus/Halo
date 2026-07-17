@@ -7,7 +7,9 @@ use crate::domain::{
     pre_key::{OneTimePreKey, PreKeyBundle, SignedPreKey},
     session::Session,
     user::User,
-    value_objects::{ConversationId, Email, GroupId, KeyId, SessionId, UserId, Username, X25519PublicKey},
+    value_objects::{
+        ConversationId, Email, GroupId, KeyId, SessionId, UserId, Username, X25519PublicKey,
+    },
 };
 
 pub trait UserRepository: Send + Sync {
