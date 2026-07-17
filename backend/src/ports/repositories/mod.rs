@@ -4,9 +4,10 @@ use crate::domain::{
     conversation::Conversation,
     error::DomainError,
     group::{Group, GroupMember},
+    pre_key::{OneTimePreKey, PreKeyBundle, SignedPreKey},
     session::Session,
     user::User,
-    value_objects::{ConversationId, Email, GroupId, SessionId, UserId, Username},
+    value_objects::{ConversationId, Email, GroupId, KeyId, SessionId, UserId, Username, X25519PublicKey},
 };
 
 pub trait UserRepository: Send + Sync {
@@ -88,4 +89,32 @@ pub trait GroupRepository: Send + Sync {
         user_id: &UserId,
     ) -> impl Future<Output = Result<(), DomainError>> + Send;
     fn update(&self, group: &Group) -> impl Future<Output = Result<(), DomainError>> + Send;
+}
+
+pub trait PreKeyRepository: Send + Sync {
+    fn find_bundle(
+        &self,
+        user_id: &UserId,
+    ) -> impl Future<Output = Result<PreKeyBundle, DomainError>> + Send;
+
+    fn save_signed_pre_key(
+        &self,
+        pre_key: &SignedPreKey,
+    ) -> impl Future<Output = Result<(), DomainError>> + Send;
+
+    fn save_one_time_pre_keys(
+        &self,
+        keys: &[OneTimePreKey],
+    ) -> impl Future<Output = Result<(), DomainError>> + Send;
+
+    fn consume_one_time_pre_key(
+        &self,
+        user_id: &UserId,
+        key_id: KeyId,
+    ) -> impl Future<Output = Result<X25519PublicKey, DomainError>> + Send;
+
+    fn count_one_time_pre_keys(
+        &self,
+        user_id: &UserId,
+    ) -> impl Future<Output = Result<u32, DomainError>> + Send;
 }

@@ -406,6 +406,44 @@ impl Signature {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct X25519PublicKey([u8; 32]);
+
+impl X25519PublicKey {
+    pub fn new(data: [u8; 32]) -> Self {
+        Self(data)
+    }
+
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.0
+    }
+}
+
+impl AsRef<[u8]> for X25519PublicKey {
+    fn as_ref(&self) -> &[u8] {
+        &self.0
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct KeyId(u32);
+
+impl KeyId {
+    pub fn new(id: u32) -> Self {
+        Self(id)
+    }
+
+    pub fn as_u32(&self) -> u32 {
+        self.0
+    }
+}
+
+impl From<u32> for KeyId {
+    fn from(id: u32) -> Self {
+        Self(id)
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct GroupName(String);
 

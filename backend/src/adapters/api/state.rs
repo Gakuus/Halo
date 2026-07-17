@@ -6,7 +6,8 @@ use crate::adapters::api::rate_limit::RateLimiter;
 use crate::adapters::auth::jwt::JwtAuthAdapter;
 use crate::adapters::db::{
     conversation::PostgresConversationRepository, group::PostgresGroupRepository,
-    session::PostgresSessionRepository, user::PostgresUserRepository,
+    pre_key::PostgresPreKeyRepository, session::PostgresSessionRepository,
+    user::PostgresUserRepository,
 };
 
 #[derive(Clone)]
@@ -16,6 +17,7 @@ pub struct AppState {
     pub session_repo: PostgresSessionRepository,
     pub conversation_repo: PostgresConversationRepository,
     pub group_repo: PostgresGroupRepository,
+    pub pre_key_repo: PostgresPreKeyRepository,
     pub auth_port: Arc<JwtAuthAdapter>,
     pub rate_limiter: RateLimiter,
 }
@@ -28,6 +30,7 @@ impl AppState {
         session_repo: PostgresSessionRepository,
         conversation_repo: PostgresConversationRepository,
         group_repo: PostgresGroupRepository,
+        pre_key_repo: PostgresPreKeyRepository,
         auth_port: JwtAuthAdapter,
         rate_limiter: RateLimiter,
     ) -> Self {
@@ -37,6 +40,7 @@ impl AppState {
             session_repo,
             conversation_repo,
             group_repo,
+            pre_key_repo,
             auth_port: Arc::new(auth_port),
             rate_limiter,
         }
