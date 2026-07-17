@@ -85,11 +85,7 @@ pub async fn rate_limit_middleware(
         .headers()
         .get("X-Forwarded-For")
         .and_then(|v| v.to_str().ok())
-        .or_else(|| {
-            req.headers()
-                .get("X-Real-IP")
-                .and_then(|v| v.to_str().ok())
-        })
+        .or_else(|| req.headers().get("X-Real-IP").and_then(|v| v.to_str().ok()))
         .unwrap_or("unknown")
         .to_string();
 

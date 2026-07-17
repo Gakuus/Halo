@@ -1,4 +1,8 @@
-use axum::{extract::{Path, Query, State}, http::StatusCode, Json};
+use axum::{
+    Json,
+    extract::{Path, Query, State},
+    http::StatusCode,
+};
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
 
@@ -71,9 +75,10 @@ pub async fn search_users(
     let filtered: Vec<_> = users
         .into_iter()
         .filter(|u| {
-            query.cursor.as_deref().is_none_or(|c| {
-                u.id().as_uuid().to_string().as_str() > c
-            })
+            query
+                .cursor
+                .as_deref()
+                .is_none_or(|c| u.id().as_uuid().to_string().as_str() > c)
         })
         .collect();
 
@@ -107,13 +112,19 @@ pub async fn get_user(
     _auth: AuthContext,
     Path(id): Path<String>,
 ) -> Result<Json<UserProfile>, (StatusCode, ApiError)> {
-    let user_id = UserId::from_uuid(
-        uuid::Uuid::parse_str(&id).map_err(|_| {
-            ApiError::new(StatusCode::BAD_REQUEST, ErrorCode::ValidationError, "Invalid user ID")
-        })?,
-    );
+    let user_id = UserId::from_uuid(uuid::Uuid::parse_str(&id).map_err(|_| {
+        ApiError::new(
+            StatusCode::BAD_REQUEST,
+            ErrorCode::ValidationError,
+            "Invalid user ID",
+        )
+    })?);
 
-    let user = state.user_repo.find_by_id(&user_id).await.map_err(|e| -> (StatusCode, ApiError) { e.into() })?;
+    let user = state
+        .user_repo
+        .find_by_id(&user_id)
+        .await
+        .map_err(|e| -> (StatusCode, ApiError) { e.into() })?;
 
     Ok(Json(UserProfile {
         user_id: user.id().as_uuid().to_string(),
@@ -129,13 +140,19 @@ pub async fn get_public_key(
     _auth: AuthContext,
     Path(id): Path<String>,
 ) -> Result<Json<PublicKeyResponse>, (StatusCode, ApiError)> {
-    let user_id = UserId::from_uuid(
-        uuid::Uuid::parse_str(&id).map_err(|_| {
-            ApiError::new(StatusCode::BAD_REQUEST, ErrorCode::ValidationError, "Invalid user ID")
-        })?,
-    );
+    let user_id = UserId::from_uuid(uuid::Uuid::parse_str(&id).map_err(|_| {
+        ApiError::new(
+            StatusCode::BAD_REQUEST,
+            ErrorCode::ValidationError,
+            "Invalid user ID",
+        )
+    })?);
 
-    let user = state.user_repo.find_by_id(&user_id).await.map_err(|e| -> (StatusCode, ApiError) { e.into() })?;
+    let user = state
+        .user_repo
+        .find_by_id(&user_id)
+        .await
+        .map_err(|e| -> (StatusCode, ApiError) { e.into() })?;
 
     Ok(Json(PublicKeyResponse {
         user_id: user.id().as_uuid().to_string(),

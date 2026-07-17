@@ -104,24 +104,22 @@ impl UserRepository for PostgresUserRepository {
     }
 
     async fn username_exists(&self, username: &Username) -> Result<bool, DomainError> {
-        let exists: bool = sqlx::query_scalar(
-            "SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)",
-        )
-        .bind(username.as_str())
-        .fetch_one(&self.pool)
-        .await
-        .map_err(|e| DomainError::Internal(format!("check username failed: {e}")))?;
+        let exists: bool =
+            sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM users WHERE username = $1)")
+                .bind(username.as_str())
+                .fetch_one(&self.pool)
+                .await
+                .map_err(|e| DomainError::Internal(format!("check username failed: {e}")))?;
         Ok(exists)
     }
 
     async fn email_exists(&self, email: &Email) -> Result<bool, DomainError> {
-        let exists: bool = sqlx::query_scalar(
-            "SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)",
-        )
-        .bind(email.as_str())
-        .fetch_one(&self.pool)
-        .await
-        .map_err(|e| DomainError::Internal(format!("check email failed: {e}")))?;
+        let exists: bool =
+            sqlx::query_scalar("SELECT EXISTS(SELECT 1 FROM users WHERE email = $1)")
+                .bind(email.as_str())
+                .fetch_one(&self.pool)
+                .await
+                .map_err(|e| DomainError::Internal(format!("check email failed: {e}")))?;
         Ok(exists)
     }
 }

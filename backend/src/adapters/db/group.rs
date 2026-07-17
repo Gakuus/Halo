@@ -32,8 +32,7 @@ impl GroupRepository for PostgresGroupRepository {
         let owner_id: uuid::Uuid = row.get("owner_id");
         let created_at: chrono::DateTime<chrono::Utc> = row.get("created_at");
 
-        let group_name =
-            GroupName::new(name).map_err(|e| DomainError::Internal(e.to_string()))?;
+        let group_name = GroupName::new(name).map_err(|e| DomainError::Internal(e.to_string()))?;
 
         let members = self.load_members(&GroupId::from_uuid(group_id)).await?;
 
@@ -136,11 +135,7 @@ impl GroupRepository for PostgresGroupRepository {
         Ok(())
     }
 
-    async fn remove_member(
-        &self,
-        group_id: &GroupId,
-        user_id: &UserId,
-    ) -> Result<(), DomainError> {
+    async fn remove_member(&self, group_id: &GroupId, user_id: &UserId) -> Result<(), DomainError> {
         sqlx::query("DELETE FROM group_members WHERE group_id = $1 AND user_id = $2")
             .bind(group_id.as_uuid())
             .bind(user_id.as_uuid())
@@ -165,13 +160,12 @@ impl GroupRepository for PostgresGroupRepository {
 
 impl PostgresGroupRepository {
     async fn load_members(&self, group_id: &GroupId) -> Result<Vec<GroupMember>, DomainError> {
-        let rows = sqlx::query(
-            "SELECT user_id, role, joined_at FROM group_members WHERE group_id = $1",
-        )
-        .bind(group_id.as_uuid())
-        .fetch_all(&self.pool)
-        .await
-        .map_err(|e| DomainError::Internal(format!("failed to load members: {e}")))?;
+        let rows =
+            sqlx::query("SELECT user_id, role, joined_at FROM group_members WHERE group_id = $1")
+                .bind(group_id.as_uuid())
+                .fetch_all(&self.pool)
+                .await
+                .map_err(|e| DomainError::Internal(format!("failed to load members: {e}")))?;
 
         let mut members = Vec::with_capacity(rows.len());
         for row in rows {
@@ -196,5 +190,3 @@ impl PostgresGroupRepository {
         Ok(members)
     }
 }
-
-

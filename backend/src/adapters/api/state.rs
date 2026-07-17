@@ -2,14 +2,12 @@ use std::sync::Arc;
 
 use sqlx::PgPool;
 
+use crate::adapters::api::rate_limit::RateLimiter;
 use crate::adapters::auth::jwt::JwtAuthAdapter;
 use crate::adapters::db::{
-    conversation::PostgresConversationRepository,
-    group::PostgresGroupRepository,
-    session::PostgresSessionRepository,
-    user::PostgresUserRepository,
+    conversation::PostgresConversationRepository, group::PostgresGroupRepository,
+    session::PostgresSessionRepository, user::PostgresUserRepository,
 };
-use crate::adapters::api::rate_limit::RateLimiter;
 
 #[derive(Clone)]
 pub struct AppState {

@@ -1,4 +1,8 @@
-use axum::{extract::{Path, State}, http::StatusCode, Json};
+use axum::{
+    Json,
+    extract::{Path, State},
+    http::StatusCode,
+};
 use serde::Deserialize;
 use tracing::instrument;
 
@@ -57,21 +61,24 @@ pub async fn create_group(
 
     let mut member_ids = Vec::new();
     for id_str in &body.member_ids {
-        let uid = UserId::from_uuid(
-            uuid::Uuid::parse_str(id_str).map_err(|_| {
-                ApiError::new(
-                    StatusCode::BAD_REQUEST,
-                    ErrorCode::ValidationError,
-                    format!("Invalid user ID: {id_str}"),
-                )
-            })?,
-        );
+        let uid = UserId::from_uuid(uuid::Uuid::parse_str(id_str).map_err(|_| {
+            ApiError::new(
+                StatusCode::BAD_REQUEST,
+                ErrorCode::ValidationError,
+                format!("Invalid user ID: {id_str}"),
+            )
+        })?);
         member_ids.push(uid);
     }
 
-    let group = Group::new(group_name, owner_id, member_ids).map_err(|e| -> (StatusCode, ApiError) { e.into() })?;
+    let group = Group::new(group_name, owner_id, member_ids)
+        .map_err(|e| -> (StatusCode, ApiError) { e.into() })?;
 
-    state.group_repo.save(&group).await.map_err(|e| -> (StatusCode, ApiError) { e.into() })?;
+    state
+        .group_repo
+        .save(&group)
+        .await
+        .map_err(|e| -> (StatusCode, ApiError) { e.into() })?;
 
     Ok((StatusCode::CREATED, Json(encode_group(&group))))
 }
@@ -82,13 +89,19 @@ pub async fn get_group(
     auth: AuthContext,
     Path(id): Path<String>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, ApiError)> {
-    let group_id = GroupId::from_uuid(
-        uuid::Uuid::parse_str(&id).map_err(|_| {
-            ApiError::new(StatusCode::BAD_REQUEST, ErrorCode::ValidationError, "Invalid group ID")
-        })?,
-    );
+    let group_id = GroupId::from_uuid(uuid::Uuid::parse_str(&id).map_err(|_| {
+        ApiError::new(
+            StatusCode::BAD_REQUEST,
+            ErrorCode::ValidationError,
+            "Invalid group ID",
+        )
+    })?);
 
-    let group = state.group_repo.find_by_id(&group_id).await.map_err(|e| -> (StatusCode, ApiError) { e.into() })?;
+    let group = state
+        .group_repo
+        .find_by_id(&group_id)
+        .await
+        .map_err(|e| -> (StatusCode, ApiError) { e.into() })?;
 
     if !group.is_member(&auth.claims.user_id) {
         return Err(ApiError::new(
@@ -113,13 +126,19 @@ pub async fn add_members(
     Path(id): Path<String>,
     ValidatedBody(body): ValidatedBody<AddMembersBody>,
 ) -> Result<Json<serde_json::Value>, (StatusCode, ApiError)> {
-    let group_id = GroupId::from_uuid(
-        uuid::Uuid::parse_str(&id).map_err(|_| {
-            ApiError::new(StatusCode::BAD_REQUEST, ErrorCode::ValidationError, "Invalid group ID")
-        })?,
-    );
+    let group_id = GroupId::from_uuid(uuid::Uuid::parse_str(&id).map_err(|_| {
+        ApiError::new(
+            StatusCode::BAD_REQUEST,
+            ErrorCode::ValidationError,
+            "Invalid group ID",
+        )
+    })?);
 
-    let group = state.group_repo.find_by_id(&group_id).await.map_err(|e| -> (StatusCode, ApiError) { e.into() })?;
+    let group = state
+        .group_repo
+        .find_by_id(&group_id)
+        .await
+        .map_err(|e| -> (StatusCode, ApiError) { e.into() })?;
 
     if !group.is_admin_or_owner(&auth.claims.user_id) {
         return Err(ApiError::new(
@@ -131,15 +150,13 @@ pub async fn add_members(
 
     let mut added = 0u32;
     for user_id_str in &body.user_ids {
-        let user_id = UserId::from_uuid(
-            uuid::Uuid::parse_str(user_id_str).map_err(|_| {
-                ApiError::new(
-                    StatusCode::BAD_REQUEST,
-                    ErrorCode::ValidationError,
-                    format!("Invalid user ID: {user_id_str}"),
-                )
-            })?,
-        );
+        let user_id = UserId::from_uuid(uuid::Uuid::parse_str(user_id_str).map_err(|_| {
+            ApiError::new(
+                StatusCode::BAD_REQUEST,
+                ErrorCode::ValidationError,
+                format!("Invalid user ID: {user_id_str}"),
+            )
+        })?);
 
         let member = GroupMember::new(user_id, GroupRole::Member);
         match state.group_repo.add_member(&group_id, &member).await {
@@ -161,13 +178,19 @@ pub async fn remove_member(
     auth: AuthContext,
     Path((group_id_str, user_id_str)): Path<(String, String)>,
 ) -> Result<StatusCode, (StatusCode, ApiError)> {
-    let group_id = GroupId::from_uuid(
-        uuid::Uuid::parse_str(&group_id_str).map_err(|_| {
-            ApiError::new(StatusCode::BAD_REQUEST, ErrorCode::ValidationError, "Invalid group ID")
-        })?,
-    );
+    let group_id = GroupId::from_uuid(uuid::Uuid::parse_str(&group_id_str).map_err(|_| {
+        ApiError::new(
+            StatusCode::BAD_REQUEST,
+            ErrorCode::ValidationError,
+            "Invalid group ID",
+        )
+    })?);
 
-    let group = state.group_repo.find_by_id(&group_id).await.map_err(|e| -> (StatusCode, ApiError) { e.into() })?;
+    let group = state
+        .group_repo
+        .find_by_id(&group_id)
+        .await
+        .map_err(|e| -> (StatusCode, ApiError) { e.into() })?;
 
     if !group.is_admin_or_owner(&auth.claims.user_id) {
         return Err(ApiError::new(
@@ -177,13 +200,19 @@ pub async fn remove_member(
         ));
     }
 
-    let target_user_id = UserId::from_uuid(
-        uuid::Uuid::parse_str(&user_id_str).map_err(|_| {
-            ApiError::new(StatusCode::BAD_REQUEST, ErrorCode::ValidationError, "Invalid user ID")
-        })?,
-    );
+    let target_user_id = UserId::from_uuid(uuid::Uuid::parse_str(&user_id_str).map_err(|_| {
+        ApiError::new(
+            StatusCode::BAD_REQUEST,
+            ErrorCode::ValidationError,
+            "Invalid user ID",
+        )
+    })?);
 
-    state.group_repo.remove_member(&group_id, &target_user_id).await.map_err(|e| -> (StatusCode, ApiError) { e.into() })?;
+    state
+        .group_repo
+        .remove_member(&group_id, &target_user_id)
+        .await
+        .map_err(|e| -> (StatusCode, ApiError) { e.into() })?;
 
     Ok(StatusCode::NO_CONTENT)
 }
@@ -194,13 +223,19 @@ pub async fn delete_group(
     auth: AuthContext,
     Path(id): Path<String>,
 ) -> Result<StatusCode, (StatusCode, ApiError)> {
-    let group_id = GroupId::from_uuid(
-        uuid::Uuid::parse_str(&id).map_err(|_| {
-            ApiError::new(StatusCode::BAD_REQUEST, ErrorCode::ValidationError, "Invalid group ID")
-        })?,
-    );
+    let group_id = GroupId::from_uuid(uuid::Uuid::parse_str(&id).map_err(|_| {
+        ApiError::new(
+            StatusCode::BAD_REQUEST,
+            ErrorCode::ValidationError,
+            "Invalid group ID",
+        )
+    })?);
 
-    let group = state.group_repo.find_by_id(&group_id).await.map_err(|e| -> (StatusCode, ApiError) { e.into() })?;
+    let group = state
+        .group_repo
+        .find_by_id(&group_id)
+        .await
+        .map_err(|e| -> (StatusCode, ApiError) { e.into() })?;
 
     if !group.is_owner(&auth.claims.user_id) {
         return Err(ApiError::new(

@@ -3,9 +3,8 @@ pub mod groups;
 pub mod users;
 
 use axum::{
-    middleware,
+    Router, middleware,
     routing::{delete, get, post},
-    Router,
 };
 
 use crate::adapters::api::middleware::auth::auth_middleware;
@@ -21,7 +20,10 @@ pub fn build_router(app_state: AppState) -> Router {
         .route("/groups", post(groups::create_group))
         .route("/groups/{id}", get(groups::get_group))
         .route("/groups/{id}/members", post(groups::add_members))
-        .route("/groups/{id}/members/{user_id}", delete(groups::remove_member))
+        .route(
+            "/groups/{id}/members/{user_id}",
+            delete(groups::remove_member),
+        )
         .route("/groups/{id}", delete(groups::delete_group))
         .route_layer(middleware::from_fn_with_state(
             app_state.clone(),

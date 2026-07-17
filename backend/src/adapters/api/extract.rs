@@ -1,7 +1,7 @@
 use axum::{
+    Json,
     extract::{FromRequest, Request},
     http::StatusCode,
-    Json,
 };
 
 use super::error::{ApiError, ErrorCode};

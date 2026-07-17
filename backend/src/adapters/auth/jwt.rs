@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use jsonwebtoken::{decode, encode, DecodingKey, EncodingKey, Header, Validation};
+use jsonwebtoken::{DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use serde::{Deserialize, Serialize};
 use tracing::instrument;
 
@@ -84,11 +84,10 @@ impl JwtAuthAdapter {
         })?;
 
         let user_id = UserId::from_uuid(
-            uuid::Uuid::parse_str(&data.claims.sub)
-                .map_err(|_| DomainError::InvalidToken)?,
+            uuid::Uuid::parse_str(&data.claims.sub).map_err(|_| DomainError::InvalidToken)?,
         );
-        let session_jti = uuid::Uuid::parse_str(&data.claims.jti)
-            .map_err(|_| DomainError::InvalidToken)?;
+        let session_jti =
+            uuid::Uuid::parse_str(&data.claims.jti).map_err(|_| DomainError::InvalidToken)?;
 
         Ok(JwtClaims {
             user_id,
@@ -117,18 +116,12 @@ impl AuthPort for JwtAuthAdapter {
     }
 
     #[instrument(skip(self))]
-    async fn validate_access_token(
-        &self,
-        token: &str,
-    ) -> Result<JwtClaims, DomainError> {
+    async fn validate_access_token(&self, token: &str) -> Result<JwtClaims, DomainError> {
         self.decode_token(token)
     }
 
     #[instrument(skip(self))]
-    async fn validate_refresh_token(
-        &self,
-        token: &str,
-    ) -> Result<JwtClaims, DomainError> {
+    async fn validate_refresh_token(&self, token: &str) -> Result<JwtClaims, DomainError> {
         self.decode_token(token)
     }
 }
@@ -139,20 +132,16 @@ impl AuthPort for Arc<JwtAuthAdapter> {
         user_id: &UserId,
         session_jti: uuid::Uuid,
     ) -> Result<TokenPair, DomainError> {
-        self.as_ref().generate_token_pair(user_id, session_jti).await
+        self.as_ref()
+            .generate_token_pair(user_id, session_jti)
+            .await
     }
 
-    async fn validate_access_token(
-        &self,
-        token: &str,
-    ) -> Result<JwtClaims, DomainError> {
+    async fn validate_access_token(&self, token: &str) -> Result<JwtClaims, DomainError> {
         self.as_ref().validate_access_token(token).await
     }
 
-    async fn validate_refresh_token(
-        &self,
-        token: &str,
-    ) -> Result<JwtClaims, DomainError> {
+    async fn validate_refresh_token(&self, token: &str) -> Result<JwtClaims, DomainError> {
         self.as_ref().validate_refresh_token(token).await
     }
 }

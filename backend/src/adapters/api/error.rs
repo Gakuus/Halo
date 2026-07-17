@@ -1,7 +1,7 @@
 use axum::{
+    Json,
     http::StatusCode,
     response::{IntoResponse, Response},
-    Json,
 };
 use serde::Serialize;
 
@@ -52,7 +52,11 @@ pub struct ApiErrorBody {
 }
 
 impl ApiError {
-    pub fn new(status: StatusCode, code: ErrorCode, message: impl Into<String>) -> (StatusCode, Self) {
+    pub fn new(
+        status: StatusCode,
+        code: ErrorCode,
+        message: impl Into<String>,
+    ) -> (StatusCode, Self) {
         (
             status,
             Self {
@@ -63,7 +67,6 @@ impl ApiError {
             },
         )
     }
-
 }
 
 impl IntoResponse for ApiError {
@@ -92,51 +95,82 @@ fn status_code_for_error_code(code: &str) -> StatusCode {
 impl From<DomainError> for (StatusCode, ApiError) {
     fn from(err: DomainError) -> Self {
         match err {
-            DomainError::InvalidCredentials => {
-                ApiError::new(StatusCode::UNAUTHORIZED, ErrorCode::InvalidCredentials, "Invalid credentials")
-            }
-            DomainError::UserNotFound | DomainError::ConversationNotFound | DomainError::GroupNotFound | DomainError::NotFound(_) => {
+            DomainError::InvalidCredentials => ApiError::new(
+                StatusCode::UNAUTHORIZED,
+                ErrorCode::InvalidCredentials,
+                "Invalid credentials",
+            ),
+            DomainError::UserNotFound
+            | DomainError::ConversationNotFound
+            | DomainError::GroupNotFound
+            | DomainError::NotFound(_) => {
                 ApiError::new(StatusCode::NOT_FOUND, ErrorCode::NotFound, err.to_string())
             }
-            DomainError::SessionNotFound | DomainError::SessionExpired => {
-                ApiError::new(StatusCode::UNAUTHORIZED, ErrorCode::SessionExpired, err.to_string())
-            }
-            DomainError::SessionRevoked => {
-                ApiError::new(StatusCode::UNAUTHORIZED, ErrorCode::Unauthorized, "Session has been revoked")
-            }
-            DomainError::InvalidToken => {
-                ApiError::new(StatusCode::UNAUTHORIZED, ErrorCode::TokenInvalid, "Invalid token")
-            }
-            DomainError::InvalidUsername(_) | DomainError::InvalidEmail(_) | DomainError::WeakPassword | DomainError::MessageTooLarge => {
-                ApiError::new(StatusCode::BAD_REQUEST, ErrorCode::ValidationError, err.to_string())
-            }
+            DomainError::SessionNotFound | DomainError::SessionExpired => ApiError::new(
+                StatusCode::UNAUTHORIZED,
+                ErrorCode::SessionExpired,
+                err.to_string(),
+            ),
+            DomainError::SessionRevoked => ApiError::new(
+                StatusCode::UNAUTHORIZED,
+                ErrorCode::Unauthorized,
+                "Session has been revoked",
+            ),
+            DomainError::InvalidToken => ApiError::new(
+                StatusCode::UNAUTHORIZED,
+                ErrorCode::TokenInvalid,
+                "Invalid token",
+            ),
+            DomainError::InvalidUsername(_)
+            | DomainError::InvalidEmail(_)
+            | DomainError::WeakPassword
+            | DomainError::MessageTooLarge => ApiError::new(
+                StatusCode::BAD_REQUEST,
+                ErrorCode::ValidationError,
+                err.to_string(),
+            ),
             DomainError::DuplicateUsername | DomainError::DuplicateEmail => {
                 ApiError::new(StatusCode::CONFLICT, ErrorCode::Conflict, err.to_string())
             }
-            DomainError::AccountLocked => {
-                ApiError::new(StatusCode::LOCKED, ErrorCode::AccountLocked, "Account is locked due to too many failed login attempts")
-            }
-            DomainError::NotParticipant | DomainError::NotMember | DomainError::NotOwner | DomainError::InsufficientPermissions => {
+            DomainError::AccountLocked => ApiError::new(
+                StatusCode::LOCKED,
+                ErrorCode::AccountLocked,
+                "Account is locked due to too many failed login attempts",
+            ),
+            DomainError::NotParticipant
+            | DomainError::NotMember
+            | DomainError::NotOwner
+            | DomainError::InsufficientPermissions => {
                 ApiError::new(StatusCode::FORBIDDEN, ErrorCode::Forbidden, err.to_string())
             }
             DomainError::MemberAlreadyExists => {
                 ApiError::new(StatusCode::CONFLICT, ErrorCode::Conflict, err.to_string())
             }
-            DomainError::GroupFull => {
-                ApiError::new(StatusCode::BAD_REQUEST, ErrorCode::ValidationError, err.to_string())
-            }
-            DomainError::UserOffline => {
-                ApiError::new(StatusCode::BAD_REQUEST, ErrorCode::ValidationError, err.to_string())
-            }
-            DomainError::InvalidSignature => {
-                ApiError::new(StatusCode::BAD_REQUEST, ErrorCode::ValidationError, err.to_string())
-            }
-            DomainError::Internal(_) => {
-                ApiError::new(StatusCode::INTERNAL_SERVER_ERROR, ErrorCode::InternalError, "An internal error occurred")
-            }
-            DomainError::Unauthorized => {
-                ApiError::new(StatusCode::UNAUTHORIZED, ErrorCode::Unauthorized, "Unauthorized")
-            }
+            DomainError::GroupFull => ApiError::new(
+                StatusCode::BAD_REQUEST,
+                ErrorCode::ValidationError,
+                err.to_string(),
+            ),
+            DomainError::UserOffline => ApiError::new(
+                StatusCode::BAD_REQUEST,
+                ErrorCode::ValidationError,
+                err.to_string(),
+            ),
+            DomainError::InvalidSignature => ApiError::new(
+                StatusCode::BAD_REQUEST,
+                ErrorCode::ValidationError,
+                err.to_string(),
+            ),
+            DomainError::Internal(_) => ApiError::new(
+                StatusCode::INTERNAL_SERVER_ERROR,
+                ErrorCode::InternalError,
+                "An internal error occurred",
+            ),
+            DomainError::Unauthorized => ApiError::new(
+                StatusCode::UNAUTHORIZED,
+                ErrorCode::Unauthorized,
+                "Unauthorized",
+            ),
         }
     }
 }

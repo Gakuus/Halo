@@ -1,6 +1,6 @@
 use axum::{
     extract::{FromRequestParts, Request, State},
-    http::{request::Parts, StatusCode},
+    http::{StatusCode, request::Parts},
     middleware::Next,
     response::{IntoResponse, Response},
 };
@@ -28,22 +28,22 @@ impl<S: Send + Sync> FromRequestParts<S> for AuthContext {
     type Rejection = (StatusCode, ApiError);
 
     async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
-        parts.extensions.get::<AuthContext>().cloned().ok_or_else(|| {
-            ApiError::new(
-                StatusCode::UNAUTHORIZED,
-                ErrorCode::Unauthorized,
-                "Missing or invalid authentication",
-            )
-        })
+        parts
+            .extensions
+            .get::<AuthContext>()
+            .cloned()
+            .ok_or_else(|| {
+                ApiError::new(
+                    StatusCode::UNAUTHORIZED,
+                    ErrorCode::Unauthorized,
+                    "Missing or invalid authentication",
+                )
+            })
     }
 }
 
 #[instrument(skip_all)]
-pub async fn auth_middleware(
-    State(state): State<AppState>,
-    req: Request,
-    next: Next,
-) -> Response {
+pub async fn auth_middleware(State(state): State<AppState>, req: Request, next: Next) -> Response {
     let token = match extract_bearer_token(&req) {
         Ok(t) => t,
         Err(_) => {
