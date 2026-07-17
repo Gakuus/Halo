@@ -305,5 +305,6 @@ Eliminar grupo (solo owner).
 | `NOT_GROUP_MEMBER` | 403 | No eres miembro del grupo |
 | `INSUFFICIENT_PERMISSIONS` | 403 | No tienes permisos |
 | `GROUP_FULL` | 400 | Grupo alcanzó límite de miembros |
+| `ACCOUNT_LOCKED` | 423 | Cuenta bloqueada por demasiados intentos fallidos |
 | `RATE_LIMIT_EXCEEDED` | 429 | Límite de peticiones excedido |
 | `VALIDATION_ERROR` | 400 | Datos de entrada inválidos |

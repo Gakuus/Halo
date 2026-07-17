@@ -38,12 +38,27 @@ where
     #[instrument(skip(self))]
     pub async fn execute(&self, cmd: LoginCommand) -> Result<AuthResponse, DomainError> {
         let user = self.find_user(&cmd.login).await?;
+        let user_id = *user.id();
+        let username = user.username().to_string();
+
+        if user.is_locked() {
+            return Err(DomainError::AccountLocked);
+        }
 
         if !verify_password(&cmd.password, user.password_hash()) {
+            let mut user = user;
+            user.record_failed_login();
+            self.user_repo.save(&user).await?;
             return Err(DomainError::InvalidCredentials);
         }
 
-        if let Some(existing_session) = self.session_repo.find_active_by_user(user.id()).await? {
+        {
+            let mut user = user;
+            user.reset_failed_logins();
+            self.user_repo.save(&user).await?;
+        }
+
+        if let Some(existing_session) = self.session_repo.find_active_by_user(&user_id).await? {
             self.session_repo
                 .update_status(existing_session.id(), &SessionStatus::Revoked)
                 .await?;
@@ -52,11 +67,11 @@ where
         let jwt_id = JwtId::new();
         let token_pair = self
             .auth_port
-            .generate_token_pair(user.id(), *jwt_id.as_uuid())
+            .generate_token_pair(&user_id, *jwt_id.as_uuid())
             .await?;
 
         let session = crate::domain::session::Session::new(
-            *user.id(),
+            user_id,
             jwt_id,
             crate::domain::value_objects::IpAddress::new("127.0.0.1".parse().unwrap()),
             crate::domain::value_objects::UserAgent::new("halo-client"),
@@ -64,8 +79,8 @@ where
         self.session_repo.save(&session).await?;
 
         Ok(AuthResponse {
-            user_id: *user.id(),
-            username: user.username().to_string(),
+            user_id,
+            username,
             token: TokenResponse {
                 access_token: token_pair.access_token.to_string(),
                 refresh_token: token_pair.refresh_token.to_string(),

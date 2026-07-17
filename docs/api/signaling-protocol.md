@@ -4,15 +4,15 @@
 
 ```
 Endpoint: ws://localhost:8080/api/v1/ws
-Query param: ?token=<jwt_token>
+Header: X-Halo-WS-Token: <jwt_token>
 ```
 
 ### Establecimiento
 
-1. Cliente conecta al WebSocket con JWT en query param
+1. Cliente inicia handshake HTTP/WS con header `X-Halo-WS-Token: <jwt>`
 2. Servidor valida JWT
 3. Si válido: asocia la conexión a la sesión del usuario
-4. Si inválido: cierra conexión con código 4001
+4. Si inválido: rechaza upgrade con 401 o cierra conexión con código 4001
 
 ### Cierre
 

@@ -68,6 +68,9 @@ pub enum DomainError {
     #[error("user is offline")]
     UserOffline,
 
+    #[error("account is locked")]
+    AccountLocked,
+
     #[error("unauthorized")]
     Unauthorized,
 

@@ -53,6 +53,24 @@ impl Conversation {
         }
     }
 
+    pub fn from_db(
+        id: ConversationId,
+        participant_a: UserId,
+        participant_b: UserId,
+        created_at: Timestamp,
+        last_message_at: Option<Timestamp>,
+        is_active: bool,
+    ) -> Self {
+        Self {
+            id,
+            participant_a,
+            participant_b,
+            created_at,
+            last_message_at,
+            is_active,
+        }
+    }
+
     pub fn is_active(&self) -> bool {
         self.is_active
     }

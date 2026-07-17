@@ -166,11 +166,20 @@
 
 ## WebSocket
 
-- Conexiones WS autenticadas mediante token JWT en query param
+- Conexiones WS autenticadas mediante **header HTTP custom** en el upgrade request: `X-Halo-WS-Token: <jwt>` (no en query param, para evitar que el token quede en logs del servidor o referer headers)
 - No almacenar tokens en localStorage (Tauri: keychain)
 - Cerrar conexión si el token expira durante la sesión
 - No reenviar mensajes a conexiones no autenticadas
 - Validar que el remitente de un mensaje de señalización es quien dice ser
+
+### Flujo de conexión WebSocket
+
+1. Cliente tiene JWT válido (access token)
+2. Cliente inicia handshake HTTP/WS con header `X-Halo-WS-Token: <jwt>`
+3. Servidor valida JWT, extrae `user_id` y `session_id`
+4. Si JWT válido: servidor acepta la conexión y asocia la sesión
+5. Si JWT inválido/expirado: servidor rechaza con 401
+6. Si el token expira durante la conexión, servidor cierra el WS
 
 ---
 

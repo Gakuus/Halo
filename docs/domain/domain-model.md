@@ -61,6 +61,7 @@ Representa un mensaje intercambiado entre usuarios (ya cifrado E2EE).
 | id | `MessageId` | Identificador único (UUID v7) |
 | conversation_id | `ConversationId` | Conversación a la que pertenece |
 | sender_id | `UserId` | Remitente |
+| sender_sequence_number | `u64` | Contador monotónico por remitente (replay protection) |
 | ciphertext | `Ciphertext` | Contenido cifrado (XChaCha20-Poly1305) |
 | iv | `Iv` | Vector de inicialización |
 | salt | `Salt` | Salt para derivación de clave |
@@ -73,6 +74,7 @@ Representa un mensaje intercambiado entre usuarios (ya cifrado E2EE).
 - El timestamp lo genera el remitente (no confiar en reloj del servidor)
 - El mensaje nunca se almacena descifrado en el servidor
 - La firma verifica autenticidad e integridad
+- `sender_sequence_number` es estrictamente creciente por remitente (rechazar si ≤ último conocido)
 
 ### Conversation (Conversación)
 

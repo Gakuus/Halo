@@ -10,6 +10,7 @@ pub struct TokenPair {
     pub refresh_token: JwtToken,
 }
 
+#[derive(Debug, Clone)]
 pub struct JwtClaims {
     pub user_id: UserId,
     pub session_jti: uuid::Uuid,

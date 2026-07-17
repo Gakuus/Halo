@@ -43,6 +43,29 @@ impl Session {
         }
     }
 
+    #[allow(clippy::too_many_arguments)]
+    pub fn from_db(
+        id: SessionId,
+        user_id: UserId,
+        jwt_id: JwtId,
+        status: SessionStatus,
+        connected_at: Timestamp,
+        last_heartbeat: Timestamp,
+        ip_address: IpAddress,
+        user_agent: UserAgent,
+    ) -> Self {
+        Self {
+            id,
+            user_id,
+            jwt_id,
+            status,
+            connected_at,
+            last_heartbeat,
+            ip_address,
+            user_agent,
+        }
+    }
+
     pub fn id(&self) -> &SessionId {
         &self.id
     }
