@@ -29,6 +29,14 @@ impl GroupMember {
         }
     }
 
+    pub fn from_db(user_id: UserId, role: GroupRole, joined_at: Timestamp) -> Self {
+        Self {
+            user_id,
+            role,
+            joined_at,
+        }
+    }
+
     pub fn user_id(&self) -> &UserId {
         &self.user_id
     }
@@ -141,6 +149,22 @@ impl Group {
             .ok_or(DomainError::NotMember)?;
         self.members.remove(pos);
         Ok(())
+    }
+
+    pub fn from_db(
+        id: GroupId,
+        name: GroupName,
+        owner_id: UserId,
+        members: Vec<GroupMember>,
+        created_at: Timestamp,
+    ) -> Self {
+        Self {
+            id,
+            name,
+            owner_id,
+            members,
+            created_at,
+        }
     }
 
     pub fn created_at(&self) -> &Timestamp {

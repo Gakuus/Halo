@@ -153,6 +153,10 @@ impl JwtId {
         Self(Uuid::now_v7())
     }
 
+    pub fn from_uuid(uuid: Uuid) -> Self {
+        Self(uuid)
+    }
+
     pub fn as_uuid(&self) -> &Uuid {
         &self.0
     }
@@ -174,6 +178,12 @@ impl JwtToken {
 
     pub fn as_str(&self) -> &str {
         &self.0
+    }
+}
+
+impl std::fmt::Display for JwtToken {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
     }
 }
 

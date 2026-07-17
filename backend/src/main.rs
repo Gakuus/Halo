@@ -1,26 +1,37 @@
 use axum::Router;
+use tokio::net::TcpListener;
 use tower_http::cors::CorsLayer;
 use tracing::info;
 
-use halo_server::adapters::api::health;
+use halo_server::adapters::api::rate_limit::RateLimiter;
+use halo_server::adapters::api::routes::build_router;
+use halo_server::adapters::api::state::AppState;
+use halo_server::adapters::auth::jwt::JwtAuthAdapter;
+use halo_server::adapters::db::conversation::PostgresConversationRepository;
+use halo_server::adapters::db::create_pool_async;
+use halo_server::adapters::db::group::PostgresGroupRepository;
+use halo_server::adapters::db::session::PostgresSessionRepository;
+use halo_server::adapters::db::user::PostgresUserRepository;
 use halo_server::config::Config;
 
 #[tokio::main]
 async fn main() {
     let config = Config::load().expect("Failed to load configuration");
-
     init_tracing(&config);
 
-    let app = build_router(&config);
+    let app = build_app(&config).await;
 
     let addr = config.server.socket_addr();
     info!("Starting server on {}", addr);
 
-    let listener = tokio::net::TcpListener::bind(addr)
+    let listener = TcpListener::bind(addr)
         .await
         .expect("Failed to bind address");
 
-    axum::serve(listener, app).await.expect("Server failed");
+    axum::serve(listener, app)
+        .with_graceful_shutdown(shutdown_signal())
+        .await
+        .expect("Server failed");
 }
 
 fn init_tracing(config: &Config) {
@@ -51,10 +62,61 @@ fn init_tracing(config: &Config) {
     }
 }
 
-fn build_router(config: &Config) -> Router {
-    let _ = config;
+async fn build_app(config: &Config) -> Router {
+    let db_pool = create_pool_async(&config.database.url, config.database.max_connections).await;
 
-    Router::new()
-        .route("/health", axum::routing::get(health::health_check))
-        .layer(CorsLayer::permissive())
+    sqlx::migrate!("./migrations")
+        .run(&db_pool)
+        .await
+        .expect("Failed to run database migrations");
+
+    let user_repo = PostgresUserRepository::new(db_pool.clone());
+    let session_repo = PostgresSessionRepository::new(db_pool.clone());
+    let conversation_repo = PostgresConversationRepository::new(db_pool.clone());
+    let group_repo = PostgresGroupRepository::new(db_pool.clone());
+
+    let auth_port = JwtAuthAdapter::new(
+        config.jwt.secret.clone(),
+        config.jwt.access_token_expiration_secs,
+        config.jwt.refresh_token_expiration_secs,
+        config.jwt.issuer.clone(),
+    );
+
+    let rate_limiter = RateLimiter::new(120, 2.0);
+
+    let app_state = AppState::new(
+        db_pool,
+        user_repo,
+        session_repo,
+        conversation_repo,
+        group_repo,
+        auth_port,
+        rate_limiter,
+    );
+
+    build_router(app_state).layer(CorsLayer::permissive())
+}
+
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        tokio::signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {},
+        _ = terminate => {},
+    }
 }
