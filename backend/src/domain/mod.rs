@@ -1,4 +1,5 @@
 pub mod conversation;
+pub mod crypto;
 pub mod error;
 pub mod group;
 pub mod message;
