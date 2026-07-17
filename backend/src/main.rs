@@ -10,6 +10,7 @@ use halo_server::adapters::auth::jwt::JwtAuthAdapter;
 use halo_server::adapters::db::conversation::PostgresConversationRepository;
 use halo_server::adapters::db::create_pool_async;
 use halo_server::adapters::db::group::PostgresGroupRepository;
+use halo_server::adapters::db::pre_key::PostgresPreKeyRepository;
 use halo_server::adapters::db::session::PostgresSessionRepository;
 use halo_server::adapters::db::user::PostgresUserRepository;
 use halo_server::config::Config;
@@ -74,6 +75,7 @@ async fn build_app(config: &Config) -> Router {
     let session_repo = PostgresSessionRepository::new(db_pool.clone());
     let conversation_repo = PostgresConversationRepository::new(db_pool.clone());
     let group_repo = PostgresGroupRepository::new(db_pool.clone());
+    let pre_key_repo = PostgresPreKeyRepository::new(db_pool.clone());
 
     let auth_port = JwtAuthAdapter::new(
         config.jwt.secret.clone(),
@@ -90,6 +92,7 @@ async fn build_app(config: &Config) -> Router {
         session_repo,
         conversation_repo,
         group_repo,
+        pre_key_repo,
         auth_port,
         rate_limiter,
     );

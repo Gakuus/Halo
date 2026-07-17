@@ -1,5 +1,6 @@
 pub mod conversation;
 pub mod group;
+pub mod pre_key;
 pub mod session;
 pub mod user;
 
